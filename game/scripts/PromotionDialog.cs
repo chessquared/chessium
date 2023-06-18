@@ -50,6 +50,7 @@ public partial class PromotionDialog : Dialog
 	public override void _Ready()
 	{
 		base._Ready();
+		ZIndex = 2000;
 		
 		mousePosition = invalidPosition;
 		lastMousePosition = invalidPosition;
@@ -65,7 +66,7 @@ public partial class PromotionDialog : Dialog
 			sprite.Vframes = 2;
 			sprite.FrameCoords = new Vector2I((int) piece, (int) player);
 			sprite.Position = new Vector2(i * Constants.tileSize + size, size);
-			sprite.ZIndex = 10;
+			sprite.ZIndex = 2010;
 			sprite.Centered = false;
 
 			i++;

@@ -77,9 +77,13 @@ public partial class UI : Node2D
 	{
 		whitePawnSlot.NewGame();
 		whitePieceSlot.NewGame();
+		whitePawnSlot.player = Side.White;
+		whitePieceSlot.player = Side.White;
 		
 		blackPawnSlot.NewGame();
 		blackPieceSlot.NewGame();
+		blackPawnSlot.player = Side.Black;
+		blackPieceSlot.player = Side.Black;
 	}
 
 	/// <summary>

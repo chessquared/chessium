@@ -1,6 +1,5 @@
 using Godot;
 using goldfish.Core.Game;
-using goldfish.Core.Data;
 using Side = goldfish.Core.Data.Side;
 
 namespace chessium.scripts;
@@ -23,8 +22,8 @@ public partial class Root : Node2D
 	/// <summary>
 	/// The current player and winner, if any.
 	/// </summary>
-	public Side player => board.state.ToMove;
-	public Side? winner => board.state.GetGameState();
+	public Side Player => board.state.ToMove;
+	public Side? Winner => board.state.GetGameState();
 	
 	/// <summary>
 	/// The current state of the game.
@@ -67,7 +66,7 @@ public partial class Root : Node2D
 
 	public void SwitchPlayer()
 	{
-		ui.SetPlayer(player);
+		ui.SetPlayer(Player);
 	}
 
 	/// <summary>

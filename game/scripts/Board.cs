@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 using goldfish.Core.Data;
 using goldfish.Core.Game;
@@ -139,7 +140,7 @@ public partial class Board : Node2D
 				var piece = GetPieceFromVector2(mouseTile);
 				if (piece != null)
 				{
-					if (piece.player == root.player)
+					if (piece.player == root.Player)
 					{
 						// draw a border around the piece being hovered over
 						DrawTileWithBorder(mouseTile, new Color(1, 1, 0));
@@ -163,7 +164,7 @@ public partial class Board : Node2D
 					}
 					else if (GetPieceFromVector2(move) != null)
 					{
-						if (GetPieceFromVector2(move).player == root.player)
+						if (GetPieceFromVector2(move).player == root.Player)
 						{
 							DrawTileWithBorder(move, new Color(0, 1, 0));
 						}
@@ -351,13 +352,13 @@ public partial class Board : Node2D
 			validMoves = new List<ChessMove>();
 
 			// make sure the game should still be continuing, end it if not
-			if (root.winner is null)
+			if (root.Winner is null)
 			{
 				root.gameState = Constants.GameState.GETTING_PIECE;
 			}
 			else
 			{
-				var dialog = new WinnerDialog(root.winner.Value);
+				var dialog = new WinnerDialog(root.Winner.Value);
 				dialog.Position = new Vector2(Constants.boardSize / 2.0f - (WinnerDialog.winnerWidth - Dialog.size) / 2.0f, Constants.boardSize / 2.0f - (WinnerDialog.winnerHeight - Dialog.size) / 2.0f);
 				
 				root.AddChild(dialog);
@@ -379,24 +380,28 @@ public partial class Board : Node2D
 
 	/// <summary>
 	/// Handle the promotion of a pawn.
-	/// TODO: fix promotion dialog not popping up
 	/// </summary>
 	/// <param name="position">The position of the promoting pawn.</param>
 	private void PromotePawn(Vector2 position)
 	{
 		root.gameState = Constants.GameState.WAITING_FOR_USER;
 
-		var dialog = new PromotionDialog(root.player);
+		var dialog = new PromotionDialog(root.Player);
 		dialog.Position = new Vector2(Constants.boardSize / 2.0f - (PromotionDialog.promotionWidth - Dialog.size) / 2.0f, Constants.boardSize / 2.0f - (PromotionDialog.promotionHeight - Dialog.size) / 2.0f);
-		root.AddChild(dialog);
+		AddChild(dialog);
 
 		// capture user's choice of piece type
 		var newPiece = PromotionType.Queen;
+		new Task(() =>
+		{
+			
+		}).Start();
+		
 		if (dialog.selectedPiece != null)
 		{
 			newPiece = (PromotionType) dialog.selectedPiece;
 		}
-		root.RemoveChild(dialog);
+		RemoveChild(dialog);
 		
 		// update the pawn to its new sprite & type
 		var key = CoordinatesToKey((int) position.X, (int) position.Y);

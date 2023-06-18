@@ -12,7 +12,7 @@ public partial class PieceSlot : Node2D
 	/// <summary>
 	/// The player who captured the piece.
 	/// </summary>
-	private Side player;
+	public Side player;
 	
 	/// <summary>
 	/// The index of the captured piece.
@@ -64,7 +64,7 @@ public partial class PieceSlot : Node2D
 		pieceSprite.Hframes = 6;
 		pieceSprite.Vframes = 2;
 		pieceSprite.ZIndex = 1000 + index;
-		pieceSprite.FrameCoords = new Vector2I((int) piece, (int) player); // TODO: fix piece sprites all appearing in the same color
+		pieceSprite.FrameCoords = new Vector2I((int) piece, 1 - (int) player);
 
 		index++;
 		AddChild(pieceSprite);
