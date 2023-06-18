@@ -30,6 +30,11 @@ public partial class UI : Node2D
 	private NewButton newButton = new ();
 	
 	/// <summary>
+	/// The button to access the game's settings.
+	/// </summary>
+	private SettingsButton settingsButton = new ();
+	
+	/// <summary>
 	/// The piece slots to store captured pieces for both players.
 	/// </summary>
 	private PieceSlot whitePawnSlot, whitePieceSlot;
@@ -53,6 +58,10 @@ public partial class UI : Node2D
 		newButton.Position = new Vector2(80.0f - NewButton.newWidth / 2.0f - Dialog.size, Constants.boardSize - NewButton.newHeight - Dialog.size * 2 - 10);
 		newButton.ZIndex = 10;
 		AddChild(newButton);
+
+		settingsButton.Position = new Vector2(80.0f - SettingsButton.settingsWidth / 2.0f - Dialog.size, Constants.boardSize - SettingsButton.settingsHeight - Dialog.size * 2 - 80);
+		settingsButton.ZIndex = 10;
+		AddChild(settingsButton);
 	}
 
 	/// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -84,6 +93,7 @@ public partial class UI : Node2D
 
 	/// <summary>
 	/// Adds a captured piece to the relevant piece slot depending on its type and the player who owns it.
+	/// TODO: fix captured pieces all being of the same color
 	/// </summary>
 	/// <param name="piece">The captured piece.</param>
 	public void CapturePiece(Piece piece)

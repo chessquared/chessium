@@ -22,7 +22,6 @@ public partial class Root : Node2D
 
 	/// <summary>
 	/// The current player and winner, if any.
-	/// TODO: refactor with adam's code (winner is likely unnecessary)
 	/// </summary>
 	public Side player => board.state.ToMove;
 	public Side? winner => board.state.GetGameState();

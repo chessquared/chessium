@@ -1,5 +1,6 @@
 using Godot;
 using goldfish.Core.Data;
+using Side = goldfish.Core.Data.Side;
 
 namespace chessium.scripts;
 
@@ -9,16 +10,9 @@ namespace chessium.scripts;
 public partial class PieceSlot : Node2D
 {
 	/// <summary>
-	/// Is the player's color black?
-	/// TODO: refactor with adam's code
-	/// </summary>
-	[Export] private bool black;
-
-	/// <summary>
 	/// The player who captured the piece.
-	/// TODO: refactor with adam's code
 	/// </summary>
-	private Constants.Player player;
+	private Side player;
 	
 	/// <summary>
 	/// The index of the captured piece.
@@ -33,11 +27,6 @@ public partial class PieceSlot : Node2D
 	/// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		if (black) // TODO: refactor with adam's code
-		{
-			player = Constants.Player.BLACK;
-		}
-
 		sprite = GetNode<Sprite2D>("Sprite2D");
 		sprite.QueueFree();
 		
@@ -75,7 +64,7 @@ public partial class PieceSlot : Node2D
 		pieceSprite.Hframes = 6;
 		pieceSprite.Vframes = 2;
 		pieceSprite.ZIndex = 1000 + index;
-		pieceSprite.FrameCoords = new Vector2I((int) piece, (int) player); // TODO: refactor with adam's code
+		pieceSprite.FrameCoords = new Vector2I((int) piece, (int) player); // TODO: fix piece sprites all appearing in the same color
 
 		index++;
 		AddChild(pieceSprite);

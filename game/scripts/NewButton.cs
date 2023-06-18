@@ -10,7 +10,7 @@ public partial class NewButton : Dialog
 	/// <summary>
 	/// The width and height of the button.
 	/// </summary>
-	public const int newWidth = 54 * 2, newHeight = 16 * 2;
+	public const int newWidth = 108, newHeight = 32;
 	
 	/// <summary>
 	/// Whether or not the mouse is currently hovering over the button.
@@ -33,7 +33,7 @@ public partial class NewButton : Dialog
 	/// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		base._Ready(); // remove if not working
+		base._Ready();
 		text = new Sprite2D();
 
 		text.Texture = GD.Load<Texture2D>("res://assets/player.png");

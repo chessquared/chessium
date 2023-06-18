@@ -1,5 +1,6 @@
+using System.Collections.Generic;
 using Godot;
-using Godot.Collections;
+using goldfish.Core.Data;
 using Side = goldfish.Core.Data.Side;
 
 namespace chessium.scripts;
@@ -10,12 +11,6 @@ namespace chessium.scripts;
 public partial class PromotionDialog : Dialog
 {
 	/// <summary>
-	/// The event that fires when a pawn is promoting.
-	/// TODO: refactor with adam's code
-	/// </summary>
-	[Signal] public delegate void OnSelectedEventHandler(Constants.Pieces type);
-
-	/// <summary>
 	/// The width and height of this dialog.
 	/// </summary>
 	public const float promotionWidth = Constants.tileSize * 4.0f;
@@ -23,9 +18,8 @@ public partial class PromotionDialog : Dialog
 
 	/// <summary>
 	/// All possible choices for promotion.
-	/// TODO: refactor with adam's code
 	/// </summary>
-	private Array<Constants.Pieces> pieces = new () { Constants.Pieces.ROOK, Constants.Pieces.KNIGHT, Constants.Pieces.BISHOP, Constants.Pieces.QUEEN };
+	private readonly List<PieceType> pieces = new () { PieceType.Rook, PieceType.Knight, PieceType.Bishop, PieceType.Queen };
 
 	/// <summary>
 	/// The position of the user's mouse.
@@ -35,13 +29,16 @@ public partial class PromotionDialog : Dialog
 
 	/// <summary>
 	/// The player who owns the promoting pawn.
-	/// TODO: refactor with adam's code
 	/// </summary>
 	private Side player;
 
 	/// <summary>
+	/// The piece to promote to.
+	/// </summary>
+	public PieceType? selectedPiece;
+
+	/// <summary>
 	/// Constructs a new PromotionDialog.
-	/// TODO: refactor with adam's code
 	/// </summary>
 	/// <param name="player">The player who owns the promoting pawn.</param>
 	public PromotionDialog(Side player) : base((int) promotionWidth, (int) promotionHeight)
@@ -52,10 +49,11 @@ public partial class PromotionDialog : Dialog
 	/// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		base._Ready(); // remove if not working
+		base._Ready();
 		
 		mousePosition = invalidPosition;
 		lastMousePosition = invalidPosition;
+		selectedPiece = null;
 
 		// adds the possible choices to the dialog
 		var i = 0;
@@ -65,7 +63,7 @@ public partial class PromotionDialog : Dialog
 			sprite.Texture = GD.Load<Texture2D>("res://assets/pieces.png");
 			sprite.Hframes = 6;
 			sprite.Vframes = 2;
-			sprite.FrameCoords = new Vector2I((int) piece, (int) player); // TODO: refactor with adam's code
+			sprite.FrameCoords = new Vector2I((int) piece, (int) player);
 			sprite.Position = new Vector2(i * Constants.tileSize + size, size);
 			sprite.ZIndex = 10;
 			sprite.Centered = false;
@@ -123,7 +121,7 @@ public partial class PromotionDialog : Dialog
 	{
 		if(@event is InputEventMouseButton && mousePosition != invalidPosition)
 		{
-			EmitSignal("OnSelected", (int) pieces[(int) mousePosition.X]); // TODO: refactor with adam's code
+			selectedPiece = pieces[(int) mousePosition.X];
 		}
 	}
 }

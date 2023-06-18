@@ -20,13 +20,11 @@ public partial class WinnerDialog : Dialog
 	
 	/// <summary>
 	/// The player who won.
-	/// TODO: refactor with adam's code
 	/// </summary>
 	private Side player;
 
 	/// <summary>
 	/// Constructs a new WinnerDialog.
-	/// TODO: refactor with adam's code
 	/// </summary>
 	/// <param name="winner">The player that won.</param>
 	public WinnerDialog(Side winner) : base(winnerWidth, winnerHeight)
@@ -37,12 +35,12 @@ public partial class WinnerDialog : Dialog
 	/// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		base._Ready(); // remove if not working
+		base._Ready();
 
 		ConfigureSprite(playerSprite);
 		ConfigureSprite(winnerSprite);
 
-		playerSprite.FrameCoords = playerSprite.FrameCoords with { Y = (int) player }; // TODO: refactor with adam's code
+		playerSprite.FrameCoords = playerSprite.FrameCoords with { Y = (int) player };
 		winnerSprite.FrameCoords = winnerSprite.FrameCoords with { Y = 2 };
 
 		var y = winnerSprite.Position.Y;

@@ -379,7 +379,7 @@ public partial class Board : Node2D
 
 	/// <summary>
 	/// Handle the promotion of a pawn.
-	/// TODO: fix event not firing
+	/// TODO: fix promotion dialog not popping up
 	/// </summary>
 	/// <param name="position">The position of the promoting pawn.</param>
 	private void PromotePawn(Vector2 position)
@@ -392,7 +392,10 @@ public partial class Board : Node2D
 
 		// capture user's choice of piece type
 		var newPiece = PromotionType.Queen;
-		dialog.OnSelected += type => { newPiece = (PromotionType) type; };
+		if (dialog.selectedPiece != null)
+		{
+			newPiece = (PromotionType) dialog.selectedPiece;
+		}
 		root.RemoveChild(dialog);
 		
 		// update the pawn to its new sprite & type

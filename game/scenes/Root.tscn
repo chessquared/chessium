@@ -45,8 +45,6 @@ position = Vector2(0, 74)
 
 [node name="PieceSlotBP" parent="UI/PieceSlots" instance=ExtResource("6_nuxto")]
 position = Vector2(0, 138)
-black = true
 
 [node name="PieceSlotBO" parent="UI/PieceSlots" instance=ExtResource("6_nuxto")]
 position = Vector2(0, 206)
-black = true
