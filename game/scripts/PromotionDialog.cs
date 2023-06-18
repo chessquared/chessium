@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using Godot;
 using goldfish.Core.Data;
 using Side = goldfish.Core.Data.Side;
@@ -16,6 +17,7 @@ public partial class PromotionDialog : Dialog
 	public const float promotionWidth = Constants.tileSize * 4.0f;
 	public const float promotionHeight = Constants.tileSize;
 
+	public SemaphoreSlim SelectionCallback = new (0);
 	/// <summary>
 	/// All possible choices for promotion.
 	/// </summary>
@@ -64,7 +66,7 @@ public partial class PromotionDialog : Dialog
 			sprite.Texture = GD.Load<Texture2D>("res://assets/pieces.png");
 			sprite.Hframes = 6;
 			sprite.Vframes = 2;
-			sprite.FrameCoords = new Vector2I((int) piece, (int) player);
+			sprite.FrameCoords = new Vector2I((int) piece, 1 - (int) player);
 			sprite.Position = new Vector2(i * Constants.tileSize + size, size);
 			sprite.ZIndex = 2010;
 			sprite.Centered = false;
@@ -123,6 +125,7 @@ public partial class PromotionDialog : Dialog
 		if(@event is InputEventMouseButton && mousePosition != invalidPosition)
 		{
 			selectedPiece = pieces[(int) mousePosition.X];
+			SelectionCallback.Release(1);
 		}
 	}
 }

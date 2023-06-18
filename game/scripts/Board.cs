@@ -391,16 +391,16 @@ public partial class Board : Node2D
 		AddChild(dialog);
 
 		// capture user's choice of piece type
-		var newPiece = PromotionType.Queen;
-		new Task(() =>
+		new Task(async () =>
 		{
-			
+			await dialog.SelectionCallback.WaitAsync();
+			CallDeferred(MethodName.FinishedPromotion, position, dialog);
 		}).Start();
-		
-		if (dialog.selectedPiece != null)
-		{
-			newPiece = (PromotionType) dialog.selectedPiece;
-		}
+	}
+
+	public void FinishedPromotion(Vector2 position, PromotionDialog dialog)
+	{
+		var newPiece = (PromotionType)dialog.selectedPiece!;
 		RemoveChild(dialog);
 		
 		// update the pawn to its new sprite & type
