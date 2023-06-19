@@ -97,7 +97,6 @@ public partial class UI : Node2D
 
 	/// <summary>
 	/// Adds a captured piece to the relevant piece slot depending on its type and the player who owns it.
-	/// TODO: fix captured pieces all being of the same color
 	/// </summary>
 	/// <param name="piece">The captured piece.</param>
 	public void CapturePiece(Piece piece)

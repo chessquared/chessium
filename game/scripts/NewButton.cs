@@ -54,6 +54,7 @@ public partial class NewButton : Dialog
 		if (@event is InputEventMouseButton { Pressed: false, ButtonIndex: MouseButton.Left } && mouseIn)
 		{
 			GetNode<Board>("/root/Root/Board").NewGame();
+			GetNode<Root>("/root/Root").NewGame();
 		}
 	}
 

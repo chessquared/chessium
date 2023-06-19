@@ -17,7 +17,7 @@ public partial class Root : Node2D
 	/// <summary>
 	/// The other UI elements.
 	/// </summary>
-	private UI ui;
+	public UI ui;
 
 	/// <summary>
 	/// The current player and winner, if any.
@@ -48,9 +48,10 @@ public partial class Root : Node2D
 	/// <summary>
 	/// Starts a new game.
 	/// </summary>
-	private void NewGame()
+	public void NewGame()
 	{
 		gameState = Constants.GameState.GETTING_PIECE;
+
 		board.NewGame();
 		ui.NewGame();
 

@@ -17,7 +17,8 @@ public partial class PromotionDialog : Dialog
 	public const float promotionWidth = Constants.tileSize * 4.0f;
 	public const float promotionHeight = Constants.tileSize;
 
-	public SemaphoreSlim SelectionCallback = new (0);
+	public readonly SemaphoreSlim selectionCallback = new (0);
+	
 	/// <summary>
 	/// All possible choices for promotion.
 	/// </summary>
@@ -125,7 +126,7 @@ public partial class PromotionDialog : Dialog
 		if(@event is InputEventMouseButton && mousePosition != invalidPosition)
 		{
 			selectedPiece = pieces[(int) mousePosition.X];
-			SelectionCallback.Release(1);
+			selectionCallback.Release(1);
 		}
 	}
 }

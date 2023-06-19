@@ -62,7 +62,7 @@ public partial class Board : Node2D
 	/// Is the board flipped?
 	/// </summary>
 	private bool isBoardFlipped = true;
-	
+
 	/// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
@@ -343,9 +343,10 @@ public partial class Board : Node2D
 			// handle pawns trying to promote
 			if (chessMove.IsPromotion)
 			{
+				GetTree().Paused = true;
 				PromotePawn(mouseTile);
 			}
-			
+
 			// reset all states after move has been completed
 			selectedPiece = null;
 			selectedPiecePosition = invalidTile;
@@ -388,20 +389,25 @@ public partial class Board : Node2D
 
 		var dialog = new PromotionDialog(root.Player);
 		dialog.Position = new Vector2(Constants.boardSize / 2.0f - (PromotionDialog.promotionWidth - Dialog.size) / 2.0f, Constants.boardSize / 2.0f - (PromotionDialog.promotionHeight - Dialog.size) / 2.0f);
+		dialog.ProcessMode = ProcessModeEnum.WhenPaused;
 		AddChild(dialog);
 
 		// capture user's choice of piece type
-		new Task(async () =>
+		async void Action()
 		{
-			await dialog.SelectionCallback.WaitAsync();
+			await dialog.selectionCallback.WaitAsync();
 			CallDeferred(MethodName.FinishedPromotion, position, dialog);
-		}).Start();
+		}
+
+		new Task(Action).Start();
 	}
 
-	public void FinishedPromotion(Vector2 position, PromotionDialog dialog)
+	private void FinishedPromotion(Vector2 position, PromotionDialog dialog)
 	{
-		var newPiece = (PromotionType)dialog.selectedPiece!;
+		var newPiece = (PromotionType) dialog.selectedPiece!;
 		RemoveChild(dialog);
+		
+		GetTree().Paused = false;
 		
 		// update the pawn to its new sprite & type
 		var key = CoordinatesToKey((int) position.X, (int) position.Y);
@@ -415,9 +421,14 @@ public partial class Board : Node2D
 	/// </summary>
 	public void NewGame()
 	{
+		if (state.ToMove == Side.Black)
+		{
+			root.ui.SetPlayer(Side.White);
+		}
+		
 		state = ChessState.DefaultState();
 		pieces = new Dictionary<int, Piece>();
-		
+
 		foreach (var child in GetChildren())
 		{
 			if (child is not Sprite2D)
