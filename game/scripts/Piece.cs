@@ -88,8 +88,9 @@ public partial class Piece : Node2D
 	/// <returns>An array of valid moves.</returns>
 	public List<ChessMove> GetValidMoves(int x, int y)
 	{
+		var (r, c) = Board.TransformCoord((x, y));
 		Span<ChessMove> positions = stackalloc ChessMove[35];
-		var cnt = board.state.GetValidMovesForSquare(x, y, positions, false);
+		var cnt = board.state.GetValidMovesForSquare(r, c, positions, false);
 
 		return new List<ChessMove>(positions[..cnt].ToArray());
 	}

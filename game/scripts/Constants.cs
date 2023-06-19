@@ -17,7 +17,7 @@ public partial class Constants : Node2D
 	/// </summary>
 	public const int tileSize = boardSize / 8;
 	
-	public static bool flipBoard = false, isEngineRequested, engineStarts;
+	public static bool flipBoard = true, isEngineRequested, engineStarts;
 	public static int engineAllottedTime, engineDepth;
 
 	/// <summary>

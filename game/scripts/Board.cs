@@ -153,7 +153,7 @@ public partial class Board : Node2D
 				foreach (var mov in validMoves)
 				{
 					// draw a border around the possible move being hovered over
-					var move = mov.NewPos.ToVector();
+					var move = TransformCoord(mov.NewPos).ToVector();
 					if (mouseTile == move)
 					{
 						DrawTileWithBorder(move, new Color(1, 1, 0));
@@ -303,9 +303,9 @@ public partial class Board : Node2D
 		}
 
 		// did the user drag the piece to a valid move location?
-		if (validMoves.Any(move => move.NewPos.ToVector() == mouseTile))
+		if (validMoves.Any(move => TransformCoord(move.NewPos).ToVector() == mouseTile))
 		{
-			var chessMove = validMoves.First(move => move.NewPos.ToVector() == mouseTile);
+			var chessMove = validMoves.First(move => TransformCoord(move.NewPos).ToVector() == mouseTile);
 
 			MovePiece(chessMove);
 			
@@ -383,7 +383,7 @@ public partial class Board : Node2D
 		var piece = GetPiece((int) position.X, (int) position.Y);
 		piece.type = (PieceType) newPiece;
 		piece.UpdateSprite();
-		state.Promote((Constants.flipBoard ? 7 - (int) position.X : (int) position.X, (int) position.Y), newPiece);
+		state.Promote(TransformCoord(((int, int))(position.X, position.Y)), newPiece);
 	}
 
 	/// <summary>
@@ -416,6 +416,11 @@ public partial class Board : Node2D
 		}
 	}
 
+	public static (int, int) TransformCoord((int, int) coord)
+	{
+		return (Constants.flipBoard ? 7 - coord.Item1 : coord.Item1, coord.Item2);
+	}
+	
 	private void MovePiece(ChessMove chessMove)
 	{
 		if (chessMove.Taken is not null)
@@ -424,22 +429,21 @@ public partial class Board : Node2D
 			{
 				var (rx, ry) = chessMove.Castle!.Value.GetCastleRookPos();
 
-				SetPiecePos(rx, ry, chessMove.Taken.Value);
+				SetPiecePos(rx, ry, TransformCoord(chessMove.Taken.Value));
 			}
 			else
 			{
-				var (x, y) = chessMove.Taken.Value;
+				var (x, y) = TransformCoord(chessMove.Taken.Value);
 				RemovePiece(x, y);
 			}
 		}
 
-		var (ox, oy) = chessMove.OldPos;
-		SetPiecePos(ox, oy, chessMove.NewPos);
+		var (ox, oy) = TransformCoord(chessMove.OldPos);
+		SetPiecePos(ox, oy, TransformCoord(chessMove.NewPos));
 	}
 
 	private void SetPiecePos(int x, int y, (int, int) newP)
 	{
-		x = Constants.flipBoard ? 7 - x : x;
 		var (tx, ty) = newP;
 		var p = pieces[CoordinatesToKey(x, y)];
 		p.Position = new Vector2(ty * Constants.tileSize, tx * Constants.tileSize);
@@ -448,19 +452,16 @@ public partial class Board : Node2D
 
 	private Piece GetPiece(int x, int y)
 	{
-		x = Constants.flipBoard ? 7 - x : x;
 		return pieces.GetValueOrDefault(CoordinatesToKey(x, y), null);
 	}
 
 	private void SetPiece(int x, int y, Piece piece)
 	{
-		x = Constants.flipBoard ? 7 - x : x;
 		pieces[CoordinatesToKey(x, y)] = piece;
 	}
 
 	private void RemovePiece(int x, int y)
 	{
-		x = Constants.flipBoard ? 7 - x : x;
 		var pos = CoordinatesToKey(x, y);
 		var pie = pieces[pos];
 		root.Capture(pie);
@@ -475,7 +476,8 @@ public partial class Board : Node2D
 		{
 			for (var y = 0; y < 8; y++)
 			{
-				var dat = state.GetPiece(x, y);
+				var (r, c) = TransformCoord((x, y));
+				var dat = state.GetPiece(r, c);
 				if(dat.IsPieceType(PieceType.Space)) continue;
 				var piece = new Piece(dat.GetSide(), dat.GetPieceType());
 				piece.Position = new Vector2(y * Constants.tileSize, x * Constants.tileSize);
