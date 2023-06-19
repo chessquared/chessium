@@ -58,11 +58,6 @@ public partial class Board : Node2D
 	/// </summary>
 	public ChessState state;
 
-	/// <summary>
-	/// Is the board flipped?
-	/// </summary>
-	private bool isBoardFlipped = true;
-
 	/// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
@@ -105,7 +100,7 @@ public partial class Board : Node2D
 
 		switch (root.gameState)
 		{
-			case Constants.GameState.WAITING_FOR_USER:
+			case Constants.GameState.WAITING_FOR_USER or Constants.GameState.CHECKMATE or Constants.GameState.STALEMATE:
 				// are we waiting for a user to pick an option (for example, pawn promotion)?
 				return;
 			
@@ -356,6 +351,9 @@ public partial class Board : Node2D
 			if (root.Winner is null)
 			{
 				root.gameState = Constants.GameState.GETTING_PIECE;
+				
+				root.SwitchPlayer();
+				QueueRedraw();
 			}
 			else
 			{
@@ -365,12 +363,9 @@ public partial class Board : Node2D
 				root.AddChild(dialog);
 				root.gameState = Constants.GameState.CHECKMATE;
 			}
-
+			
 			state = chessMove.NewState;
 			heldDown = false;
-			
-			root.SwitchPlayer();
-			QueueRedraw();
 		}
 		else
 		{
@@ -437,22 +432,27 @@ public partial class Board : Node2D
 				child.QueueFree();
 			}
 		}
+		
+		DrawBoard(true);
 
+		foreach (var pair in pieces)
+		{
+			AddChild(pair.Value);
+		}
+	}
+
+	private void DrawBoard(bool flip)
+	{
 		for (var x = 0; x < 8; x++)
 		{
 			for (var y = 0; y < 8; y++)
 			{
-				var dat = state.GetPiece(isBoardFlipped ? 7 - x : x, y);
+				var dat = state.GetPiece(flip ? 7 - x : x, y);
 				if(dat.IsPieceType(PieceType.Space)) continue;
 				var piece = new Piece(dat.GetSide(), dat.GetPieceType());
 				piece.Position = new Vector2(y * Constants.tileSize, x * Constants.tileSize);
 				pieces[CoordinatesToKey(x, y)] = piece;
 			}
-		}
-
-		foreach (var pair in pieces)
-		{
-			AddChild(pair.Value);
 		}
 	}
 

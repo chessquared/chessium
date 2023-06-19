@@ -1,4 +1,5 @@
 ﻿using Godot;
+using goldfish.Core.Data;
 
 namespace chessium.scripts;
 
@@ -33,6 +34,8 @@ public partial class SettingsMenu : Dialog
     private Dialog allottedTime = new (166, 48), depth = new (166, 48);
     private Label allottedTimeLabel = new (), depthLabel = new ();
     private HSlider allottedTimeSlider = new (), depthSlider = new ();
+
+    private Board board;
     
     /// <summary>
     /// The font for labels.
@@ -54,6 +57,8 @@ public partial class SettingsMenu : Dialog
     {
         base._Ready();
         ZIndex = 2000;
+
+        board = GetNode<Board>("/root/Root/Board");
         
         titleLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1));
         titleLabel.AddThemeFontOverride("font", font);
@@ -221,6 +226,10 @@ public partial class SettingsMenu : Dialog
     /// </summary>
     private void OnBoardFlipSelected()
     {
+        if (!board.state.Equals(ChessState.DefaultState()))
+        {
+            return;
+        }
         Constants.flipBoard = !Constants.flipBoard;
     }
 
@@ -234,6 +243,11 @@ public partial class SettingsMenu : Dialog
             return;
         }
         
+        if (!board.state.Equals(ChessState.DefaultState()))
+        {
+            return;
+        }
+        
         Constants.engineStarts = !Constants.engineStarts;
     }
 
@@ -242,6 +256,11 @@ public partial class SettingsMenu : Dialog
     /// </summary>
     private void OnUseEngineSelected()
     {
+        if (!board.state.Equals(ChessState.DefaultState()))
+        {
+            return;
+        }
+        
         engineStartButton.Disabled = Constants.isEngineRequested;
         allottedTimeSlider.Editable = !Constants.isEngineRequested;
         depthSlider.Editable = !Constants.isEngineRequested;
@@ -255,6 +274,11 @@ public partial class SettingsMenu : Dialog
     /// <param name="value"></param>
     private void OnAllottedTimeChanged(double value)
     {
+        if (!board.state.Equals(ChessState.DefaultState()))
+        {
+            return;
+        }
+        
         Constants.engineAllottedTime = (int) value;
     }
 
@@ -264,6 +288,11 @@ public partial class SettingsMenu : Dialog
     /// <param name="value"></param>
     private void OnDepthChanged(double value)
     {
+        if (!board.state.Equals(ChessState.DefaultState()))
+        {
+            return;
+        }
+        
         Constants.engineDepth = (int) value;
     }
 }

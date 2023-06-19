@@ -36,6 +36,7 @@ public partial class WinnerDialog : Dialog
 	public override void _Ready()
 	{
 		base._Ready();
+		ZIndex = 2000;
 
 		ConfigureSprite(playerSprite);
 		ConfigureSprite(winnerSprite);
@@ -63,7 +64,7 @@ public partial class WinnerDialog : Dialog
 		sprite.Centered = false;
 		sprite.Hframes = 1;
 		sprite.Vframes = 4;
-		sprite.ZIndex = 10;
+		sprite.ZIndex = 2010;
 		sprite.Position = new Vector2(size, size);
 		
 		AddChild(sprite);
