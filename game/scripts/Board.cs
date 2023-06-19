@@ -21,7 +21,7 @@ public partial class Board : Node2D
 	/// <summary>
 	/// Represents the tile that the mouse has selected and is currently selecting.
 	/// </summary>
-	private Vector2 mouseTile, previousMouseTile;
+	private Vector2 mouseTile, previousMouseTile, mousePos, previousMousePosition;
 
 	/// <summary>
 	/// The piece selected by the user's mouse.
@@ -73,9 +73,10 @@ public partial class Board : Node2D
 	public override void _Process(double delta)
 	{
 		var mouse = GetGlobalMousePosition();
+		if(selectedPiece is not null) selectedPiece.Position = mousePos - new Vector2(Constants.tileSize / 2.0f, Constants.tileSize / 2.0f);
 		// sets the current mouse tile to where the user is hovering their mouse (or has clicked)
 		mouseTile = mouse.X > Constants.boardSize ? invalidTile : MapGlobalCoordsToBoard(mouse);
-		
+		mousePos = mouse;
 		if (mouseTile == previousMouseTile)
 		{
 			return;
@@ -198,10 +199,10 @@ public partial class Board : Node2D
 	/// <param name="x">The row to fetch from.</param>
 	/// <param name="y">The column to fetch from.</param>
 	/// <returns>The piece at the position, if any.</returns>
-	private Piece GetPiece(int x, int y)
-	{
-		return GetPieceFromGrid(x, y, pieces);
-	}
+//	private Piece GetPiece(int x, int y)
+//	{
+//		return GetPieceFromGrid(x, y, pieces);
+//	}
 
 	/// <summary>
 	/// Gets the piece from the pieces stored in the game board.
@@ -210,22 +211,22 @@ public partial class Board : Node2D
 	/// <param name="y">The column to fetch from.</param>
 	/// <param name="dictionary">The list of pieces currently present on the board.</param>
 	/// <returns>The piece at the position, if any.</returns>
-	private Piece GetPieceFromGrid(int x, int y, Dictionary<int, Piece> dictionary)
-	{
-		if (x is < 8 and >= 0 && y is < 8 and >= 0)
-		{
-			if (dictionary.ContainsKey(CoordinatesToKey(x, y)))
-			{
-				var piece = dictionary[CoordinatesToKey(x, y)];
-				if (piece != null)
-				{
-					return piece;
-				}
-			}
-		}
-
-		return null;
-	}
+//	private Piece GetPieceFromGrid(int x, int y, Dictionary<int, Piece> dictionary)
+//	{
+//		if (x is < 8 and >= 0 && y is < 8 and >= 0)
+//		{
+//			if (dictionary.ContainsKey(CoordinatesToKey(x, y)))
+//			{
+//				var piece = dictionary[CoordinatesToKey(x, y)];
+//				if (piece != null)
+//				{
+//					return piece;
+//				}
+//			}
+//		}
+//
+//		return null;
+//	}
 
 	/// <summary>
 	/// Draws a border around a tile on the board.
@@ -248,7 +249,7 @@ public partial class Board : Node2D
 			return;
 		}
 
-		var piece = GetPieceFromVector2(mouseTile);
+		var piece = GetPiece((int)mouseTile.X, (int)mouseTile.Y);
 		if (piece == null)
 		{
 			return;
@@ -259,8 +260,8 @@ public partial class Board : Node2D
 			// we're good for making a move, set relevant vars to the needed values to do so
 			selectedPiece = piece;
 			selectedPiecePosition = mouseTile;
+			previousMousePosition = selectedPiece.Position;
 			validMoves = piece.GetValidMovesFromVector2(mouseTile);
-				
 			heldDown = true;
 
 			root.gameState = Constants.GameState.MAKING_A_MOVE;
@@ -273,6 +274,7 @@ public partial class Board : Node2D
 	/// </summary>
 	private void Deselect()
 	{
+		if(selectedPiece is not null) selectedPiece.Position = previousMousePosition;
 		selectedPiece = null;
 		selectedPiecePosition = invalidTile;
 		validMoves = new List<ChessMove>();
@@ -287,7 +289,7 @@ public partial class Board : Node2D
 	/// <param name="event">The click or drag event.</param>
 	private void HandlePieceMove(InputEventMouseButton @event)
 	{
-		if ((@event.ButtonIndex == MouseButton.Right || mouseTile == invalidTile) && selectedPiece != null)
+		if ((@event.ButtonIndex == MouseButton.Right || mouseTile == invalidTile) || selectedPiece == null)
 		{
 			Deselect();
 			heldDown = false;
@@ -305,36 +307,8 @@ public partial class Board : Node2D
 		{
 			var chessMove = validMoves.First(move => move.NewPos.ToVector() == mouseTile);
 
-			if (chessMove.Taken is not null)
-			{
-				var capturePosition = CoordinatesToKey(chessMove.Taken.Value.Item1, chessMove.Taken.Value.Item2);
-				if (chessMove.IsCastle)
-				{
-					var (rx, ry) = chessMove.Castle!.Value.GetCastleRookPos();
-					var (tx, ty) = chessMove.Taken.Value;
-					
-					var rook = pieces[CoordinatesToKey(rx, ry)];
-					rook.Position = new Vector2(ty * Constants.tileSize, tx * Constants.tileSize);
-					pieces[CoordinatesToKey(tx, ty)] = rook;
-				}
-				else
-				{
-					root.Capture(pieces[capturePosition]);
-					RemoveChild(pieces[capturePosition]);
-
-					pieces[capturePosition].QueueFree();
-					pieces.Remove(capturePosition);
-				}
-			}
-
-			var (nx, ny) = chessMove.NewPos;
-			var (ox, oy) = chessMove.OldPos;
+			MovePiece(chessMove);
 			
-			pieces.Remove(CoordinatesToKey(ox, oy));
-			pieces[CoordinatesToKey(nx, ny)] = selectedPiece;
-
-			selectedPiece!.Position = new Vector2(ny * Constants.tileSize, nx * Constants.tileSize);
-
 			// handle pawns trying to promote
 			if (chessMove.IsPromotion)
 			{
@@ -346,6 +320,8 @@ public partial class Board : Node2D
 			selectedPiece = null;
 			selectedPiecePosition = invalidTile;
 			validMoves = new List<ChessMove>();
+
+			state = chessMove.NewState;
 
 			// make sure the game should still be continuing, end it if not
 			if (root.Winner is null)
@@ -364,7 +340,6 @@ public partial class Board : Node2D
 				root.gameState = Constants.GameState.CHECKMATE;
 			}
 			
-			state = chessMove.NewState;
 			heldDown = false;
 		}
 		else
@@ -405,10 +380,10 @@ public partial class Board : Node2D
 		GetTree().Paused = false;
 		
 		// update the pawn to its new sprite & type
-		var key = CoordinatesToKey((int) position.X, (int) position.Y);
-		pieces[key].type = (PieceType) newPiece;
-		pieces[key].UpdateSprite();
-		state.Promote(((int) position.X, (int) position.Y), newPiece);
+		var piece = GetPiece((int) position.X, (int) position.Y);
+		piece.type = (PieceType) newPiece;
+		piece.UpdateSprite();
+		state.Promote((Constants.flipBoard ? 7 - (int) position.X : (int) position.X, (int) position.Y), newPiece);
 	}
 
 	/// <summary>
@@ -433,7 +408,7 @@ public partial class Board : Node2D
 			}
 		}
 		
-		DrawBoard(true);
+		DrawBoard();
 
 		foreach (var pair in pieces)
 		{
@@ -441,17 +416,70 @@ public partial class Board : Node2D
 		}
 	}
 
-	private void DrawBoard(bool flip)
+	private void MovePiece(ChessMove chessMove)
+	{
+		if (chessMove.Taken is not null)
+		{
+			if (chessMove.IsCastle)
+			{
+				var (rx, ry) = chessMove.Castle!.Value.GetCastleRookPos();
+
+				SetPiecePos(rx, ry, chessMove.Taken.Value);
+			}
+			else
+			{
+				var (x, y) = chessMove.Taken.Value;
+				RemovePiece(x, y);
+			}
+		}
+
+		var (ox, oy) = chessMove.OldPos;
+		SetPiecePos(ox, oy, chessMove.NewPos);
+	}
+
+	private void SetPiecePos(int x, int y, (int, int) newP)
+	{
+		x = Constants.flipBoard ? 7 - x : x;
+		var (tx, ty) = newP;
+		var p = pieces[CoordinatesToKey(x, y)];
+		p.Position = new Vector2(ty * Constants.tileSize, tx * Constants.tileSize);
+		pieces[CoordinatesToKey(tx, ty)] = p;
+	}
+
+	private Piece GetPiece(int x, int y)
+	{
+		x = Constants.flipBoard ? 7 - x : x;
+		return pieces.GetValueOrDefault(CoordinatesToKey(x, y), null);
+	}
+
+	private void SetPiece(int x, int y, Piece piece)
+	{
+		x = Constants.flipBoard ? 7 - x : x;
+		pieces[CoordinatesToKey(x, y)] = piece;
+	}
+
+	private void RemovePiece(int x, int y)
+	{
+		x = Constants.flipBoard ? 7 - x : x;
+		var pos = CoordinatesToKey(x, y);
+		var pie = pieces[pos];
+		root.Capture(pie);
+		RemoveChild(pie);
+		pie.QueueFree();
+		pieces.Remove(pos);
+	}
+
+	private void DrawBoard()
 	{
 		for (var x = 0; x < 8; x++)
 		{
 			for (var y = 0; y < 8; y++)
 			{
-				var dat = state.GetPiece(flip ? 7 - x : x, y);
+				var dat = state.GetPiece(x, y);
 				if(dat.IsPieceType(PieceType.Space)) continue;
 				var piece = new Piece(dat.GetSide(), dat.GetPieceType());
 				piece.Position = new Vector2(y * Constants.tileSize, x * Constants.tileSize);
-				pieces[CoordinatesToKey(x, y)] = piece;
+				SetPiece(x, y, piece);
 			}
 		}
 	}

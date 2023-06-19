@@ -41,7 +41,7 @@ public partial class WinnerDialog : Dialog
 		ConfigureSprite(playerSprite);
 		ConfigureSprite(winnerSprite);
 
-		playerSprite.FrameCoords = playerSprite.FrameCoords with { Y = (int) player };
+		playerSprite.FrameCoords = playerSprite.FrameCoords with { Y = 1 - (int) player };
 		winnerSprite.FrameCoords = winnerSprite.FrameCoords with { Y = 2 };
 
 		var y = winnerSprite.Position.Y;
