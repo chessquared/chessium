@@ -31,9 +31,13 @@ public partial class SettingsMenu : Dialog
     private Dialog boardFlip = new (144, 16), engineStart = new (190, 16), useEngine = new (144, 16);
     private Button boardFlipButton = new (), engineStartButton = new (), useEngineButton = new ();
     
+    /// <summary>
+    /// The sliders to enable options such as time allotted and the depth of the engine.
+    /// </summary>
     private Dialog allottedTime = new (166, 48), depth = new (166, 48);
     private Label allottedTimeLabel = new (), depthLabel = new ();
     private HSlider allottedTimeSlider = new (), depthSlider = new ();
+    private SliderLabel allottedTimeSliderLabel = new (), depthSliderLabel = new ();
 
     private Board board;
     
@@ -139,6 +143,7 @@ public partial class SettingsMenu : Dialog
         allottedTimeLabel.Position = new Vector2(size, size);
         allottedTimeLabel.ZIndex = 2002;
         
+        allottedTimeSlider.AddChild(allottedTimeSliderLabel);
         allottedTimeSlider.ZIndex = 2002;
         allottedTimeSlider.MinValue = 15.0;
         allottedTimeSlider.MaxValue = 60.0;
@@ -151,7 +156,7 @@ public partial class SettingsMenu : Dialog
         allottedTimeSlider.Size = new Vector2(166, 32);
         allottedTimeSlider.Position = new Vector2(size, size * 2);
         allottedTimeSlider.ValueChanged += OnAllottedTimeChanged;
-        
+
         allottedTime.ZIndex = 2001;
         allottedTime.Position = new Vector2(settingsWidth / 1.5f, size * 5);
 
@@ -167,6 +172,7 @@ public partial class SettingsMenu : Dialog
         depthLabel.Position = new Vector2(size, size);
         depthLabel.ZIndex = 2002;
         
+        depthSlider.AddChild(depthSliderLabel);
         depthSlider.MinValue = 1.0;
         depthSlider.MaxValue = 6.0;
         depthSlider.Step = 1.0;

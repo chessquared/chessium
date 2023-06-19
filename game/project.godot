@@ -31,6 +31,10 @@ window/size/resizable=false
 
 project/assembly_name="chessium"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/SliderLabel/plugin.cfg")
+
 [filesystem]
 
 import/blender/enabled=false
