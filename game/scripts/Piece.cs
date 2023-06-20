@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Godot;
-using Godot.Collections;
 using goldfish.Core.Data;
 using goldfish.Core.Game;
 using Side = goldfish.Core.Data.Side;
@@ -27,19 +26,16 @@ public partial class Piece : Node2D
 
 	/// <summary>
 	/// Represents the player who owns the piece.
-	/// TODO: refactor with adam's code
 	/// </summary>
 	public Side player;
 	
 	/// <summary>
 	/// Represents the type of the piece.
-	/// TODO: refactor with adam's code
 	/// </summary>
 	public PieceType type;
 	
 	/// <summary>
 	/// Constructs a new Piece instance.
-	/// TODO: refactor with adam's code
 	/// </summary>
 	/// <param name="player">The player who owns the piece.</param>
 	/// <param name="type">The type of piece.</param>
@@ -86,7 +82,7 @@ public partial class Piece : Node2D
 	/// <param name="x">The row of the piece.</param>
 	/// <param name="y">The column of the piece.</param>
 	/// <returns>An array of valid moves.</returns>
-	public List<ChessMove> GetValidMoves(int x, int y)
+	private List<ChessMove> GetValidMoves(int x, int y)
 	{
 		var (r, c) = Board.TransformCoord((x, y));
 		Span<ChessMove> positions = stackalloc ChessMove[35];
@@ -97,7 +93,6 @@ public partial class Piece : Node2D
 
 	/// <summary>
 	/// Gets all valid moves for a piece from a Vector2 position.
-	/// TODO: refactor with adam's code
 	/// </summary>
 	/// <param name="vector">The position of the piece.</param>
 	/// <returns>An array of valid moves.</returns>

@@ -61,8 +61,19 @@ public partial class Board : Node2D
 	/// </summary>
 	public ChessState state;
 
+	/// <summary>
+	/// Represents the chess engine.
+	/// </summary>
 	public GoldFishSearcher searcher;
+	
+	/// <summary>
+	/// Represents the move that is considered the best by the engine (for the engine).
+	/// </summary>
 	private ChessMove bestEngineMove;
+	
+	/// <summary>
+	/// Is the engine making a move?
+	/// </summary>
 	private bool isEngineMoving;
 
 	/// Called when the node enters the scene tree for the first time.
@@ -196,6 +207,11 @@ public partial class Board : Node2D
 		}
 	}
 
+	/// <summary>
+	/// Maps pixels coordinates to grid coordinates (0 - 7, 0 - 7).
+	/// </summary>
+	/// <param name="position">The original position, in pixels.</param>
+	/// <returns>A new Vector2 representing a position on the chess board.</returns>
 	private Vector2 MapGlobalCoordsToBoard(Vector2 position)
 	{
 		return new Vector2(Mathf.Floor(position.Y / Constants.tileSize), Mathf.Floor(position.X / Constants.tileSize));
@@ -356,6 +372,9 @@ public partial class Board : Node2D
 		}
 	}
 
+	/// <summary>
+	/// Callback method for when the engine has finished making a move.
+	/// </summary>
 	public void EngineFinishedMoving()
 	{
 		MovePiece(bestEngineMove);
@@ -390,6 +409,11 @@ public partial class Board : Node2D
 		new Task(Action).Start();
 	}
 
+	/// <summary>
+	/// Callback method for when a player has finished promoting their piece.
+	/// </summary>
+	/// <param name="position">The position of the piece that has promoted.</param>
+	/// <param name="dialog">The promotion dialog.</param>
 	private void FinishedPromotion(Vector2 position, PromotionDialog dialog)
 	{
 		var newPiece = (PromotionType) dialog.selectedPiece!;
@@ -434,11 +458,20 @@ public partial class Board : Node2D
 		}
 	}
 
+	/// <summary>
+	/// Converts board coordinates to their flipped version if the board is flipped.
+	/// </summary>
+	/// <param name="coord">The coordinates to flip.</param>
+	/// <returns>The flipped version of the original coordinates.</returns>
 	public static (int, int) TransformCoord((int, int) coord)
 	{
 		return (Constants.flipBoard ? 7 - coord.Item1 : coord.Item1, coord.Item2);
 	}
 	
+	/// <summary>
+	/// Moves a selected piece to its new position.
+	/// </summary>
+	/// <param name="chessMove">The move that a player has made.</param>
 	private void MovePiece(ChessMove chessMove)
 	{
 		if (chessMove.Taken is not null)
@@ -460,6 +493,12 @@ public partial class Board : Node2D
 		SetPiecePos(ox, oy, TransformCoord(chessMove.NewPos));
 	}
 
+	/// <summary>
+	/// Sets the new position of a piece from its old position.
+	/// </summary>
+	/// <param name="x">The original x coordinate of its position.</param>
+	/// <param name="y">The original y coordinate of its position.</param>
+	/// <param name="newP">The new position to set.</param>
 	private void SetPiecePos(int x, int y, (int, int) newP)
 	{
 		var (tx, ty) = newP;
@@ -468,16 +507,33 @@ public partial class Board : Node2D
 		pieces[CoordinatesToKey(tx, ty)] = p;
 	}
 
+	/// <summary>
+	/// Gets a piece (or null) from a square on the chess board.
+	/// </summary>
+	/// <param name="x">The x coordinate.</param>
+	/// <param name="y">The y coordinate.</param>
+	/// <returns>An instance of a piece, or null if there is nothing.</returns>
 	private Piece GetPiece(int x, int y)
 	{
 		return pieces.GetValueOrDefault(CoordinatesToKey(x, y), null);
 	}
 
+	/// <summary>
+	/// Sets a piece in the global dictionary of pieces.
+	/// </summary>
+	/// <param name="x">The x coordinate of the piece's position.</param>
+	/// <param name="y">The y coordinate of the piece's position.</param>
+	/// <param name="piece">The piece to set.</param>
 	private void SetPiece(int x, int y, Piece piece)
 	{
 		pieces[CoordinatesToKey(x, y)] = piece;
 	}
 
+	/// <summary>
+	/// Removes a piece from the board.
+	/// </summary>
+	/// <param name="x">The x coordinate of the piece to be removed.</param>
+	/// <param name="y">The y coordinate of the piece to be removed.</param>
 	private void RemovePiece(int x, int y)
 	{
 		var pos = CoordinatesToKey(x, y);
@@ -488,6 +544,9 @@ public partial class Board : Node2D
 		pieces.Remove(pos);
 	}
 
+	/// <summary>
+	/// Draws all pieces on the board.
+	/// </summary>
 	private void DrawBoard()
 	{
 		for (var x = 0; x < 8; x++)
@@ -496,9 +555,15 @@ public partial class Board : Node2D
 			{
 				var (r, c) = TransformCoord((x, y));
 				var dat = state.GetPiece(r, c);
-				if(dat.IsPieceType(PieceType.Space)) continue;
+				
+				if(dat.IsPieceType(PieceType.Space))
+				{
+					continue;
+				}
+				
 				var piece = new Piece(dat.GetSide(), dat.GetPieceType());
 				piece.Position = new Vector2(y * Constants.tileSize, x * Constants.tileSize);
+				
 				SetPiece(x, y, piece);
 			}
 		}

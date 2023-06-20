@@ -16,8 +16,20 @@ public partial class Constants : Node2D
 	/// The size of an individual tile (that contains a piece).
 	/// </summary>
 	public const int tileSize = boardSize / 8;
+
+	/// <summary>
+	/// Should the board be flipped?
+	/// </summary>
+	public static bool flipBoard = true;
 	
-	public static bool flipBoard = true, isEngineRequested, engineStarts;
+	/// <summary>
+	/// Options related to the engine (should it be used, should it start?).
+	/// </summary>
+	public static bool isEngineRequested, engineStarts;
+	
+	/// <summary>
+	/// Numeric options related to the strength of the engine (how much time it gets per move, how much depth it can have).
+	/// </summary>
 	public static int engineAllottedTime = 20, engineDepth = 5;
 
 	/// <summary>

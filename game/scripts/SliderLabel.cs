@@ -3,6 +3,7 @@
 namespace chessium.scripts;
 
 /// <summary>
+/// Represents a label that appears when a slider is hovered over.
 /// Converted from https://github.com/KoBeWi/Godot-Slider-Label.
 /// </summary>
 public partial class SliderLabel : Label
