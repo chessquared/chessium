@@ -1,5 +1,8 @@
-﻿using Godot;
+﻿using System;
+using Godot;
 using goldfish.Core.Data;
+using goldfish.Engine.Searcher;
+using Environment = System.Environment;
 
 namespace chessium.scripts;
 
@@ -280,12 +283,18 @@ public partial class SettingsMenu : Dialog
     /// <param name="value"></param>
     private void OnAllottedTimeChanged(double value)
     {
-        if (!board.state.Equals(ChessState.DefaultState()))
+        if (!Constants.isEngineRequested)
         {
             return;
         }
         
         Constants.engineAllottedTime = (int) value;
+        
+        board.searcher = new GoldFishSearcher(TimeSpan.FromSeconds(Constants.engineAllottedTime), Constants.engineDepth, (int) (Environment.ProcessorCount / 1.2));
+        board.searcher.SearchUpdate += result =>
+        {
+            GetWindow().Title = $"Engine is thinking at depth: {result}";
+        };
     }
 
     /// <summary>
@@ -294,11 +303,17 @@ public partial class SettingsMenu : Dialog
     /// <param name="value"></param>
     private void OnDepthChanged(double value)
     {
-        if (!board.state.Equals(ChessState.DefaultState()))
+        if (!Constants.isEngineRequested)
         {
             return;
         }
         
         Constants.engineDepth = (int) value;
+        
+        board.searcher = new GoldFishSearcher(TimeSpan.FromSeconds(Constants.engineAllottedTime), Constants.engineDepth, (int) (Environment.ProcessorCount / 1.2));
+        board.searcher.SearchUpdate += result =>
+        {
+            GetWindow().Title = $"Engine is thinking at depth: {result}";
+        };
     }
 }

@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 using goldfish.Core.Data;
 using goldfish.Core.Game;
+using goldfish.Engine.Searcher;
+using Environment = System.Environment;
 using Side = goldfish.Core.Data.Side;
 
 namespace chessium.scripts;
@@ -58,6 +61,10 @@ public partial class Board : Node2D
 	/// </summary>
 	public ChessState state;
 
+	public GoldFishSearcher searcher;
+	private ChessMove bestEngineMove;
+	private bool isEngineMoving;
+
 	/// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
@@ -67,13 +74,24 @@ public partial class Board : Node2D
 		validMoves = new List<ChessMove>();
 		pieces = new Dictionary<int, Piece>();
 		root = GetParent<Root>();
+
+		searcher = new GoldFishSearcher(TimeSpan.FromSeconds(Constants.engineAllottedTime), Constants.engineDepth, (int) (Environment.ProcessorCount / 1.2));
+		searcher.SearchUpdate += result =>
+		{
+			GetWindow().Title = $"Engine is thinking at depth: {result}";
+		};
 	}
 
 	/// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
 		var mouse = GetGlobalMousePosition();
-		if(selectedPiece is not null) selectedPiece.Position = mousePos - new Vector2(Constants.tileSize / 2.0f, Constants.tileSize / 2.0f);
+		
+		if(selectedPiece is not null)
+		{
+			selectedPiece.Position = mousePos - new Vector2(Constants.tileSize / 2.0f, Constants.tileSize / 2.0f);
+		}
+		
 		// sets the current mouse tile to where the user is hovering their mouse (or has clicked)
 		mouseTile = mouse.X > Constants.boardSize ? invalidTile : MapGlobalCoordsToBoard(mouse);
 		mousePos = mouse;
@@ -194,41 +212,6 @@ public partial class Board : Node2D
 	}
 
 	/// <summary>
-	/// Gets the piece from an (x, y) coordinate pair.
-	/// </summary>
-	/// <param name="x">The row to fetch from.</param>
-	/// <param name="y">The column to fetch from.</param>
-	/// <returns>The piece at the position, if any.</returns>
-//	private Piece GetPiece(int x, int y)
-//	{
-//		return GetPieceFromGrid(x, y, pieces);
-//	}
-
-	/// <summary>
-	/// Gets the piece from the pieces stored in the game board.
-	/// </summary>
-	/// <param name="x">The row to fetch from.</param>
-	/// <param name="y">The column to fetch from.</param>
-	/// <param name="dictionary">The list of pieces currently present on the board.</param>
-	/// <returns>The piece at the position, if any.</returns>
-//	private Piece GetPieceFromGrid(int x, int y, Dictionary<int, Piece> dictionary)
-//	{
-//		if (x is < 8 and >= 0 && y is < 8 and >= 0)
-//		{
-//			if (dictionary.ContainsKey(CoordinatesToKey(x, y)))
-//			{
-//				var piece = dictionary[CoordinatesToKey(x, y)];
-//				if (piece != null)
-//				{
-//					return piece;
-//				}
-//			}
-//		}
-//
-//		return null;
-//	}
-
-	/// <summary>
 	/// Draws a border around a tile on the board.
 	/// </summary>
 	/// <param name="position">The position of the tile.</param>
@@ -274,7 +257,11 @@ public partial class Board : Node2D
 	/// </summary>
 	private void Deselect()
 	{
-		if(selectedPiece is not null) selectedPiece.Position = previousMousePosition;
+		if(selectedPiece is not null)
+		{
+			selectedPiece.Position = previousMousePosition;
+		}
+		
 		selectedPiece = null;
 		selectedPiecePosition = invalidTile;
 		validMoves = new List<ChessMove>();
@@ -289,7 +276,7 @@ public partial class Board : Node2D
 	/// <param name="event">The click or drag event.</param>
 	private void HandlePieceMove(InputEventMouseButton @event)
 	{
-		if ((@event.ButtonIndex == MouseButton.Right || mouseTile == invalidTile) || selectedPiece == null)
+		if (@event.ButtonIndex == MouseButton.Right || mouseTile == invalidTile || selectedPiece == null)
 		{
 			Deselect();
 			heldDown = false;
@@ -324,11 +311,31 @@ public partial class Board : Node2D
 			state = chessMove.NewState;
 
 			// make sure the game should still be continuing, end it if not
-			if (root.Winner is null)
+			if (root.Winner is null && !Constants.isEngineRequested)
 			{
 				root.gameState = Constants.GameState.GETTING_PIECE;
 				
 				root.SwitchPlayer();
+				QueueRedraw();
+			}
+			else if (root.Winner is null)
+			{
+				GetWindow().Title = "Engine is thinking...";
+				
+				GetTree().Paused = true;
+				root.SwitchPlayer();
+				
+				new Task(() =>
+				{
+					var (_, bestMove, _, _) = searcher.StartSearch(state);
+					bestEngineMove = bestMove;
+					
+					CallDeferred(nameof(EngineFinishedMoving));
+				}).Start();
+
+				root.gameState = Constants.GameState.GETTING_PIECE;
+				
+				GetWindow().Title = "chessium";
 				QueueRedraw();
 			}
 			else
@@ -347,6 +354,17 @@ public partial class Board : Node2D
 			heldDown = false;
 			Deselect();
 		}
+	}
+
+	public void EngineFinishedMoving()
+	{
+		MovePiece(bestEngineMove);
+		
+		state = bestEngineMove.NewState;
+		isEngineMoving = false;
+		
+		GetTree().Paused = false;
+		root.SwitchPlayer();
 	}
 
 	/// <summary>
@@ -427,7 +445,7 @@ public partial class Board : Node2D
 		{
 			if (chessMove.IsCastle)
 			{
-				var (rx, ry) = chessMove.Castle!.Value.GetCastleRookPos();
+				var (rx, ry) = TransformCoord(chessMove.Castle!.Value.GetCastleRookPos());
 
 				SetPiecePos(rx, ry, TransformCoord(chessMove.Taken.Value));
 			}

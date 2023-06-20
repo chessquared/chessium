@@ -18,7 +18,7 @@ public partial class Constants : Node2D
 	public const int tileSize = boardSize / 8;
 	
 	public static bool flipBoard = true, isEngineRequested, engineStarts;
-	public static int engineAllottedTime, engineDepth;
+	public static int engineAllottedTime = 20, engineDepth = 5;
 
 	/// <summary>
 	/// An enum representing the current state of the game.
@@ -36,7 +36,7 @@ public partial class Constants : Node2D
 		/// <summary>
 		/// Are we stalemated?
 		/// </summary>
-		STALEMATE, // TODO: implement with adam's code
+		STALEMATE,
 		/// <summary>
 		/// Are we checkmated?
 		/// </summary>
